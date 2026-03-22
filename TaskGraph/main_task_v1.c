@@ -5,6 +5,9 @@
 
 using namespace std;
 
+/**
+ * I fixed the dependencies here on my own without much trouble
+ */
 void test_routine(double* a, int N)
 {
     #pragma omp parallel
@@ -21,7 +24,7 @@ void test_routine(double* a, int N)
 
           for (int j = i+1; j <N; ++j)
             {
-                #pragma omp task depend(inout:a[j*N+i]);
+                #pragma omp task depend(in: a[i*N+i]) depend(inout: a[j*N+i])
                 {
                   a[j*N+i] = a[j*N+i] / a[i*N+i];
                 }
@@ -32,7 +35,7 @@ void test_routine(double* a, int N)
             {
               for (int k = i+1; k <= j; ++k)
                 {
-                  #pragma omp task depend(inout: a[j*N+i]);
+                  #pragma omp task depend(in: a[j*N+i], a[k*N+i]) depend(inout: a[j*N+k])
                   {
                     a[j*N+k] -= a[j*N+i]*a[k*N+i];
                   }

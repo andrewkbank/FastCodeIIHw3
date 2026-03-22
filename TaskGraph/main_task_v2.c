@@ -5,48 +5,45 @@
 
 using namespace std;
 
-
-void test_routine(double* a, int N)
+void test_routine(double *a, int N)
 {
-  int x;
 #pragma omp parallel
   {
 
-    #pragma omp single
+#pragma omp single
     {
-  for (int i = 0; i != N; ++i)
-    {
-       #pragma omp task depend(inout:x)
+      for (int i = 0; i != N; ++i)
       {
-        a[i*N+i] = sqrt(a[i*N+i]);
-      }
+#pragma omp task depend(inout : x)
+        {
+          a[i * N + i] = sqrt(a[i * N + i]);
+        }
 
-      #pragma omp taskloop
-      for (int j = i+1; j <N; ++j)
+#pragma omp taskloop
+        for (int j = i + 1; j < N; ++j)
         {
           {
-            a[j*N+i] = a[j*N+i] / a[i*N+i];
+            a[j * N + i] = a[j * N + i] / a[i * N + i];
           }
         }
 
-      #pragma omp taskgroup
-      {
-      for (int j = i + 1; j < N; ++j)
+#pragma omp taskgroup
         {
-          for (int k = i+1; k <= j; ++k)
+          for (int j = i + 1; j < N; ++j)
+          {
+            for (int k = i + 1; k <= j; ++k)
             {
-               #pragma omp task
+#pragma omp task
               {
-                a[j*N+k] -= a[j*N+i]*a[k*N+i];
+                a[j * N + k] -= a[j * N + i] * a[k * N + i];
               }
             }
+          }
         }
       }
     }
-    }
   }
 }
-
 
 int main()
 {
@@ -56,32 +53,31 @@ int main()
   int N = 10;
 
   double *a, *b;
-  a = (double*)calloc(N*N, sizeof(double));
-  b = (double*)calloc(N*N, sizeof(double));  
-  
-  //create lower tri matrix
-  for (int i = 0; i < N; ++i)
-    for (int  j = 0; j <= i; ++j)
-      a[i*N+j] = rand() %10 + 1;
+  a = (double *)calloc(N * N, sizeof(double));
+  b = (double *)calloc(N * N, sizeof(double));
 
-  //compute A * A'
+  // create lower tri matrix
+  for (int i = 0; i < N; ++i)
+    for (int j = 0; j <= i; ++j)
+      a[i * N + j] = rand() % 10 + 1;
+
+  // compute A * A'
   for (int i = 0; i < N; ++i)
     for (int j = 0; j < N; ++j)
       for (int k = 0; k < N; ++k)
-	b[i*N+j] += a[i*N+k] * a[j*N+k];
-  
+        b[i * N + j] += a[i * N + k] * a[j * N + k];
+
   test_routine(b, N);
 
   bool correct = true;
   for (int i = 0; i < N; ++i)
-    for (int  j = 0; j <= i; ++j)
-      correct &= (fabs(a[i*N+j] - b[i*N+j]) < 1e-7);
+    for (int j = 0; j <= i; ++j)
+      correct &= (fabs(a[i * N + j] - b[i * N + j]) < 1e-7);
 
-  cout<<(correct?"Yes":"No")<<endl;
-  
+  cout << (correct ? "Yes" : "No") << endl;
+
   free(a);
-  free(b);  
-  
+  free(b);
+
   return 0;
 }
-
