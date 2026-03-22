@@ -14,6 +14,8 @@ Threads: 8, Avg cycles: 13391926.080000
 
 Threads: 16, Avg cycles: 14259841.920000
 
+Note that triangle.c contains the task implementation because I was able to save and reuse the sequential and parallel-atomic implementation results from HW1.
+
 make run_small
 
 make run_medium
